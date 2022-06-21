@@ -1,0 +1,4 @@
+alibi-detect[prophet]
+numpy
+pandas
+matplotlib
