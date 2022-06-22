@@ -26,26 +26,56 @@ services:
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
 
   kafdrop:
-      image: obsidiandynamics/kafdrop
-      restart: "no"
-      ports:
-        - "9000:9001"
-      environment:
-        KAFKA_BROKERCONNECT: "broker:29092"
-        JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
-      depends_on:
-        - broker
-
-  generator:
-    image: ruivieira/anomaly-generator
-    build:      
-      context: ../../../python/anomaly-generator
+    container_name: kafdrop
+    image: obsidiandynamics/kafdrop:latest
+    restart: "no"
+    ports:
+      - "8888:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "broker:29092"
+      JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
     depends_on:
       - broker
 
+  generator:
+    container_name: generator
+    image: ruivieira/anomaly-generator
+    build:      
+      context: ./anomaly-generator
+    depends_on:
+      - broker
+    ports:
+      - "5000:5000"
+    environment:
+      - PERIOD=24
+      - AMPLITUDE=100
+      - ERROR=20
+      - MEAN=200
+
   anomaly-detector:
+    container_name: anomaly-detector
     image: ruivieira/anomaly-detector
     ports:
       - "9000:9000"
     build:      
       context: ./anomaly-detection
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana-enterprise:8.2.0
+    ports:
+      - 3000:3000
+    user: '104'
+
+  test-bridge:
+    container_name: test-bridge
+    image: ruivieira/test-bridge
+    build:      
+      context: ./test-bridge
+    depends_on:
+      - broker
+      - generator
+    environment:
+      - PYTHONUNBUFFERED=1
