@@ -29,7 +29,7 @@ services:
       image: obsidiandynamics/kafdrop
       restart: "no"
       ports:
-        - "9000:9000"
+        - "9000:9001"
       environment:
         KAFKA_BROKERCONNECT: "broker:29092"
         JVM_OPTS: "-Xms16M -Xmx48M -Xss180K -XX:-TieredCompilation -XX:+UseStringDeduplication -noverify"
@@ -42,3 +42,10 @@ services:
       context: ../../../python/anomaly-generator
     depends_on:
       - broker
+
+  anomaly-detector:
+    image: ruivieira/anomaly-detector
+    ports:
+      - "9000:9000"
+    build:      
+      context: ./anomaly-detection

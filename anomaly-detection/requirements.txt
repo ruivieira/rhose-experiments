@@ -1,4 +1,4 @@
-alibi-detect[prophet]
-numpy
 pandas
+numpy
+alibi-detect[prophet]==0.9.0
 matplotlib

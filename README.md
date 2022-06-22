@@ -1,18 +1,23 @@
 # Starting
 
+## Kafka and detectors
+
 Start by using
 
 ```shell
-docker-compose up docker-compose up --build -d
+docker-compose up zookeeper broker anomaly-detector --build -d
 ```
 
-# Kafka topic
-
-Build the Kafka topic with:
+## Generator
 
 ```shell
-docker exec broker \
-kafka-topics --bootstrap-server broker:9092 \
-             --create \
-             --topic quickstart
+docker-compose up generator --build -d
+```
+
+# Anomaly detection
+
+```
+curl -X POST  http://localhost:9000/predict \
+   -H 'Content-Type: application/json' \
+   -d '{"y": 210}'
 ```
