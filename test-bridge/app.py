@@ -16,7 +16,8 @@ KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "localhost:9092")
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "data")
 
 # MODEL_URL = 'http://anomaly-detector:9000/predict'
-MODEL_URL = "http://localhost:9000/predict"
+MODEL_ANOMALY_URL = "http://localhost:9000/predict"
+MODEL_DRIFT_URL = "http://localhost:8897/predict"
 GENERATOR_URL = "http://localhost:5000/update"
 
 ALL_DATA = []
@@ -40,7 +41,7 @@ st.set_page_config(
 # dashboard title
 st.title("Real-Time anomaly / drift detection")
 
-DATA = {"y": [], "ds": [], "outlier": [], "mean": []}
+DATA = {"y": [], "ds": [], "outlier": [], "mean": [], "drift": []}
 
 def create_anomaly():
     requests.get(f"{GENERATOR_URL}?spike=2.0")
@@ -57,16 +58,22 @@ with st.sidebar:
 # Plot containers
 
 data_holder = st.empty()
-mean_holder = st.empty()
+
 
 for message in consumer:
     data = json.loads(message.value)
     DATA["y"].append(data["y"])
     DATA["ds"].append(pd.Timestamp(data["ds"]).to_pydatetime())
-    response = requests.post(MODEL_URL, json=data)
+    # Get anomaly prediction
+    response = requests.post(MODEL_ANOMALY_URL, json=data)
     json_resp = json.loads(response.json())
     DATA["outlier"].append(json_resp["outlier"])
     DATA["mean"].append(sum(DATA["y"])/len(DATA["y"]))
+
+    # Get drift prediction
+    response = requests.post(MODEL_DRIFT_URL, json={"y": data['y']})
+    json_resp = json.loads(response.json())
+    DATA["drift"].append(json_resp["drift"])
 
     df = pd.DataFrame(data=DATA)
     df['colour'] = df['outlier'].apply(lambda x: "k" if x==0 else "r")
@@ -77,10 +84,17 @@ for message in consumer:
         ax.scatter(df.ds, df.y, c=df.colour)
         st.pyplot(fig, use_container_width=True)
 
-    with mean_holder.container():
-        fig, ax = plt.subplots(figsize=(20,4))
-        ax.plot(df.ds, df['mean'], c="k", alpha=0.75)
-        st.pyplot(fig, use_container_width=True)
+        mean_col, drift_col = st.columns(2)
+    
+        with mean_col:
+            fig, ax = plt.subplots(figsize=(10,4))
+            ax.plot(df.ds, df['mean'], c="k", alpha=0.75)
+            st.pyplot(fig, use_container_width=True)
+
+        with drift_col:
+            fig, ax = plt.subplots(figsize=(10,4))
+            ax.scatter(df.ds, df['drift'], c="k", alpha=0.75)
+            st.pyplot(fig, use_container_width=True)
 
 
     print(response.json())

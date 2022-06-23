@@ -23,4 +23,4 @@ class DriftDetector(object):
         else:
             value = 0
         print(request)
-        return json.dumps({"y": y, "outlier": value})
+        return json.dumps({"y": y, "drift": value})
