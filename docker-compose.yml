@@ -61,6 +61,16 @@ services:
       context: ./anomaly-detection
     environment:
       - PYTHONUNBUFFERED=1
+  
+  drift-detector:
+    container_name: drift-detector
+    image: ruivieira/drift-detector
+    ports:
+      - "8897:9000"
+    build:      
+      context: ./drift-detector
+    environment:
+      - PYTHONUNBUFFERED=1
 
   grafana:
     container_name: grafana
