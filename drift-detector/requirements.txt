@@ -1,0 +1,4 @@
+pandas
+numpy
+alibi-detect==0.9.0
+matplotlib
