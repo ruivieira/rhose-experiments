@@ -69,6 +69,7 @@ def emit():
         ANOMALY_SPIKE = False
     time = datetime.now()
     payload = build_message(y, time)
+    print(f"Sending {payload}")
     log.info(f"Sending {payload}")
     producer.send(KAFKA_TOPIC, value=bytes(payload, "UTF-8"))
     time_counter += 1

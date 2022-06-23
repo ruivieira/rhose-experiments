@@ -1,4 +1,4 @@
-kafka-python
+confluent-kafka
 requests
 streamlit
 matplotlib

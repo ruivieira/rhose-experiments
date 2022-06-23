@@ -51,6 +51,8 @@ services:
       - AMPLITUDE=100
       - ERROR=20
       - MEAN=200
+      - PYTHONUNBUFFERED=1
+
 
   anomaly-detector:
     container_name: anomaly-detector
@@ -76,7 +78,7 @@ services:
     container_name: grafana
     image: grafana/grafana-enterprise:8.2.0
     ports:
-      - 3000:3000
+      - "3000:3000"
     user: '104'
 
   test-bridge:
@@ -89,3 +91,6 @@ services:
       - generator
     environment:
       - PYTHONUNBUFFERED=1
+    ports:
+      - "8502:8501"
+

@@ -10,5 +10,9 @@ docker-compose up generator --build -d
 
 sleep 5
 
-# echo Starting test bridge
-# docker-compose up test-bridge --build -d
+echo Starting test bridge
+docker-compose up test-bridge --build -d
+
+echo Following services are available:
+echo - Test bridge: http://127.0.0.1:8502
+echo - Kafdrop: http://127.0.0.1:8888
