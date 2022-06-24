@@ -1,11 +1,13 @@
 from datetime import datetime
 import json
+import socket
 from flask import Flask, request
 import os
 from flask_apscheduler import APScheduler
 import generator
-from kafka import KafkaProducer
+from confluent_kafka import Producer
 import logging
+
 log = logging.getLogger("anomaly-generator")
 
 
@@ -22,10 +24,15 @@ MEAN = float(os.environ.get("MEAN", 0))
 DRIFT = float(os.environ.get("DRIFT", 0))
 KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "broker:29092")
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "data")
-ANOMALY_SPIKE=False
+ANOMALY_SPIKE = False
 ANOMALY_SPIKE_VALUE = 2.0
 
-producer = KafkaProducer(bootstrap_servers=[KAFKA_BROKER])
+KAFKA_CONFIG = {
+    "bootstrap.servers": KAFKA_BROKER,
+    "client.id": "anomaly-generator",
+}
+
+producer = Producer(KAFKA_CONFIG)
 
 
 def build_message(value: float, t: datetime) -> str:
@@ -71,7 +78,7 @@ def emit():
     payload = build_message(y, time)
     print(f"Sending {payload}")
     log.info(f"Sending {payload}")
-    producer.send(KAFKA_TOPIC, value=bytes(payload, "UTF-8"))
+    producer.produce(KAFKA_TOPIC, value=payload)
     time_counter += 1
 
 

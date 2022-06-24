@@ -15,18 +15,23 @@ log = logging.getLogger("test-bridge")
 KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "broker:29092")
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "data")
 
-KAFKA_CONFIG = {'bootstrap.servers': KAFKA_BROKER,
-        'group.id': "rhose-experiments",
-        'enable.auto.commit': False,
-        'auto.offset.reset': 'earliest'}
+KAFKA_CONFIG = {
+    "bootstrap.servers": KAFKA_BROKER,
+    "group.id": "rhose-experiments",
+    "enable.auto.commit": False,
+    "auto.offset.reset": "earliest",
+}
 
 
-MODEL_ANOMALY_URL = os.environ.get("MODEL_ANOMALY_URL", "http://anomaly-detector:9000/predict")
-MODEL_DRIFT_URL = os.environ.get("MODEL_DRIFT_URL", "http://drift-detector:9000/predict")
+MODEL_ANOMALY_URL = os.environ.get(
+    "MODEL_ANOMALY_URL", "http://anomaly-detector:9000/predict"
+)
+MODEL_DRIFT_URL = os.environ.get(
+    "MODEL_DRIFT_URL", "http://drift-detector:9000/predict"
+)
 GENERATOR_URL = os.environ.get("GENERATOR_URL", "http://generator:5000/update")
 
 ALL_DATA = []
-
 
 
 @st.experimental_memo
@@ -44,6 +49,7 @@ st.set_page_config(
 st.title("Real-Time anomaly / drift detection")
 
 DATA = {"y": [], "ds": [], "outlier": [], "mean": [], "drift": []}
+
 
 def create_anomaly():
     requests.get(f"{GENERATOR_URL}?spike=2.0")
@@ -64,18 +70,20 @@ data_holder = st.empty()
 
 consumer = Consumer(KAFKA_CONFIG)
 try:
-    consumer.subscribe(['data'])
+    consumer.subscribe(["data"])
     while True:
         message = consumer.poll(timeout=1.0)
-        if message is None: continue
+        if message is None:
+            continue
 
         if message.error():
             if message.error().code() == KafkaError._PARTITION_EOF:
                 # End of partition event
-                print('Reached end at offset')
+                print("Reached end at offset")
             elif message.error():
                 raise KafkaException(message.error())
         else:
+            consumer.commit(asynchronous=False)
             data = json.loads(message.value())
             DATA["y"].append(data["y"])
             DATA["ds"].append(pd.Timestamp(data["ds"]).to_pydatetime())
@@ -114,14 +122,10 @@ try:
                     ax.scatter(df.ds, df.drift, c=df.c_drift, alpha=0.75)
                     st.pyplot(fig, use_container_width=True)
                     plt.close(fig)
-        
+
 finally:
     # Close down consumer to commit final offsets.
     consumer.close()
 
-
-
-
-        
 
 print("Something went wrong, because I left the Kafka loop.")
