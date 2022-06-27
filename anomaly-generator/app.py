@@ -17,10 +17,11 @@ scheduler = APScheduler()
 time_counter = 0
 drift_counter = 0
 drifting = False
-PERIOD = float(os.environ.get("PERIOD", 10))
-AMPLITUDE = float(os.environ.get("AMPLITUDE", 100))
-ERROR = float(os.environ.get("ERROR", 2))
-MEAN = float(os.environ.get("MEAN", 0))
+N = 86400  # 60 * 60 * 24
+PERIOD = float(os.environ.get("PERIOD", N))
+AMPLITUDE = float(os.environ.get("AMPLITUDE", 0.1))
+ERROR = float(os.environ.get("ERROR", 100))
+MEAN = float(os.environ.get("MEAN", 200))
 DRIFT = float(os.environ.get("DRIFT", 0))
 KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "broker:29092")
 KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "data")
@@ -117,6 +118,6 @@ def update():
 
 
 if __name__ == "__main__":
-    scheduler.add_job(id="Scheduled Task", func=emit, trigger="interval", seconds=3)
+    scheduler.add_job(id="Scheduled Task", func=emit, trigger="interval", seconds=1)
     scheduler.start()
     app.run(host="0.0.0.0")

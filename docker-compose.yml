@@ -47,9 +47,9 @@ services:
     ports:
       - "5000:5000"
     environment:
-      - PERIOD=24
-      - AMPLITUDE=100
-      - ERROR=20
+      - PERIOD=86400
+      - AMPLITUDE=0.1
+      - ERROR=100
       - MEAN=200
       - PYTHONUNBUFFERED=1
 
